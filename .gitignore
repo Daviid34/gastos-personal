@@ -12,3 +12,4 @@ frontend/.env
 # Entorno / secretos
 .env
 *.env.local
+*.pem
