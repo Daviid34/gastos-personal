@@ -1,0 +1,31 @@
+name: Sincronizar transacciones
+
+on:
+  schedule:
+    # Se ejecuta cada 6 horas (UTC). Ajusta la cron expression si quieres otra frecuencia.
+    - cron: "0 */6 * * *"
+  workflow_dispatch: {}  # permite lanzarlo manualmente desde la pestaña "Actions" de GitHub
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install requests pyjwt cryptography
+
+      - name: Ejecutar sincronización
+        env:
+          EB_APPLICATION_ID: ${{ secrets.EB_APPLICATION_ID }}
+          EB_PRIVATE_KEY: ${{ secrets.EB_PRIVATE_KEY }}
+          EB_ACCOUNT_UID: ${{ secrets.EB_ACCOUNT_UID }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: python sync_transacciones.py
