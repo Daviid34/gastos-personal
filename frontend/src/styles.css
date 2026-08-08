@@ -323,3 +323,27 @@ h1 {
   color: #b3261e;
   border-color: #b3261e;
 }
+
+.vista-selector {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin: 12px 0;
+}
+
+.comparativa {
+  text-align: center;
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+  padding: 6px;
+  border-radius: 6px;
+}
+.comparativa.peor { color: #b3261e; background: rgba(179,38,30,0.08); }
+.comparativa.mejor { color: #1f4d3a; background: rgba(31,77,58,0.08); }
+
+.graficas h3 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 20px 0 8px;
+}
