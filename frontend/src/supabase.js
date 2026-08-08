@@ -72,11 +72,11 @@ export async function guardarReglaCategoria(patron, categoria) {
   if (!r.ok) throw new Error('No se pudo guardar la regla de categoría')
 }
 
-export async function getResumenMensual(mes, forzar = false) {
+export async function getResumenMensual(mes) {
   const r = await fetch(`${URL}/functions/v1/resumen-mensual`, {
     method: 'POST',
     headers,
-    body: JSON.stringify({ mes, forzar }),
+    body: JSON.stringify({ mes }),
   })
   const data = await r.json()
   if (!r.ok) throw new Error(data.error || 'No se pudo generar el resumen')
