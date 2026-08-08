@@ -347,3 +347,41 @@ h1 {
   letter-spacing: 0.05em;
   margin: 20px 0 8px;
 }
+
+.fab-ia {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #1f4d3a;
+  color: #fff;
+  border: none;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  cursor: pointer;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s;
+}
+.fab-ia:hover {
+  transform: scale(1.05);
+}
+.fab-ia:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.texto-ia {
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin: 12px 0;
+  padding: 10px;
+  background: rgba(31,77,58,0.06);
+  border-radius: 8px;
+}

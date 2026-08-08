@@ -1,6 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
-import { getMovimientos, updateCategoria, getIngresos, setIngresoMesActual, deleteMovimiento, getReglasCategoria, guardarReglaCategoria, getResumenMensual } from './supabase'
-
+import {
+  getMovimientos,
+  updateCategoria,
+  getIngresos,
+  setIngresoMesActual,
+  deleteMovimiento,
+  getReglasCategoria,
+  guardarReglaCategoria,
+  getResumenMensual,
+} from './supabase'
 import {
   CATEGORIAS,
   sugerirCategoria,
@@ -78,6 +86,10 @@ export default function App() {
     return Object.entries(grupos).sort((a, b) => b[1] - a[1])
   }, [delMes, reglas])
 
+  useEffect(() => {
+    setResumenIA(null)
+  }, [mesSeleccionado])
+
   async function cambiarCategoria(mov, categoria) {
     setMovimientos((prev) =>
       prev.map((m) => (m.id === mov.id ? { ...m, categoria } : m))
@@ -111,19 +123,6 @@ export default function App() {
     }
   }
 
-  async function generarResumen(forzar = false) {
-    setCargandoResumen(true)
-    try {
-      const texto = await getResumenMensual(mesSeleccionado, forzar)
-      setResumenIA(texto)
-    } catch (e) {
-      setError(e.message)
-    } finally {
-      setCargandoResumen(false)
-    }
-  }
-
-
   async function guardarSueldo(valor) {
     const num = Number(valor)
     if (!num || num <= 0) return
@@ -133,6 +132,18 @@ export default function App() {
       await setIngresoMesActual(num)
     } catch (e) {
       setError(e.message)
+    }
+  }
+
+  async function generarResumen(forzar = false) {
+    setCargandoResumen(true)
+    try {
+      const texto = await getResumenMensual(mesSeleccionado, forzar)
+      setResumenIA(texto)
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setCargandoResumen(false)
     }
   }
 
@@ -229,15 +240,8 @@ export default function App() {
               <button type="submit">Guardar</button>
             </form>
           )}
-          <div className="resumen-ia">
-            {resumenIA ? (
-              <p className="texto-ia">🤖 {resumenIA}</p>
-            ) : (
-              <button className="btn-ia" onClick={() => generarResumen(false)} disabled={cargandoResumen}>
-                {cargandoResumen ? 'Generando...' : '✨ Generar resumen con IA'}
-              </button>
-            )}
-          </div>
+
+          {resumenIA && <p className="texto-ia">🤖 {resumenIA}</p>}
         </section>
 
         {vista === 'resumen' ? (
@@ -307,6 +311,15 @@ export default function App() {
           <div className="perforation" aria-hidden="true" />
         </footer>
       </main>
+
+      <button
+        className="fab-ia"
+        onClick={() => generarResumen(false)}
+        disabled={cargandoResumen}
+        title="Generar resumen con IA"
+      >
+        {cargandoResumen ? '···' : 'IA'}
+      </button>
     </div>
   )
 }
