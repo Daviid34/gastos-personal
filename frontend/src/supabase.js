@@ -56,3 +56,18 @@ export async function deleteMovimiento(id) {
   })
   if (!r.ok) throw new Error('No se pudo eliminar el movimiento')
 }
+
+export async function getReglasCategoria() {
+  const r = await fetch(`${URL}/rest/v1/reglas_categoria?select=*`, { headers })
+  if (!r.ok) throw new Error('No se pudieron cargar las reglas de categoría')
+  return r.json()
+}
+
+export async function guardarReglaCategoria(patron, categoria) {
+  const r = await fetch(`${URL}/rest/v1/reglas_categoria?on_conflict=patron`, {
+    method: 'POST',
+    headers: { ...headers, Prefer: 'resolution=merge-duplicates' },
+    body: JSON.stringify([{ patron, categoria }]),
+  })
+  if (!r.ok) throw new Error('No se pudo guardar la regla de categoría')
+}

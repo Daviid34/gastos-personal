@@ -1,21 +1,31 @@
 import { useEffect, useMemo, useState } from 'react'
-import { getMovimientos, updateCategoria, getIngresos, setIngresoMesActual, deleteMovimiento } from './supabase'
+import { getMovimientos, updateCategoria, getIngresos, setIngresoMesActual, deleteMovimiento, getReglasCategoria, guardarReglaCategoria } from './supabase'
 
 const CATEGORIAS = [
   'Alimentación', 'Transporte', 'Ocio', 'Suscripciones',
   'Salud', 'Vivienda', 'Compras', 'Otros',
 ]
 
+const [reglas, setReglas] = useState([])
+
 const REGLAS = [
-  [/mercadona|carrefour|lidl|aldi|caprabo|consum/i, 'Alimentación'],
-  [/renfe|hife|uber|cabify|taxi|repsol|cepsa|shell|estaci[oó]n/i, 'Transporte'],
-  [/spotify|netflix|hbo|disney|prime|youtube|icloud|google/i, 'Suscripciones'],
-  [/farmacia|clinica|cl[ií]nica|dentista|hospital/i, 'Salud'],
-  [/ryanair|vueling|booking|airbnb|trip\.com|hotel/i, 'Ocio'],
-  [/zara|amazon|el corte|decathlon|media markt/i, 'Compras'],
+  [/mercadona|carrefour|lidl|aldi|caprabo|consum|dia %|eroski|alcampo/i, 'Alimentación'],
+  [/glovo|just eat|uber eats|deliveroo/i, 'Alimentación'],
+  [/renfe|hife|uber|cabify|blablacar|taxi|repsol|cepsa|shell|bp |estaci[oó]n|parking|itv|peaje/i, 'Transporte'],
+  [/spotify|netflix|hbo|disney|prime video|youtube|icloud|google (one|storage)|playstation|xbox|nintendo/i, 'Suscripciones'],
+  [/farmacia|clinica|cl[ií]nica|dentista|hospital|seguro (medico|salud)|mutua|fisioterap/i, 'Salud'],
+  [/ryanair|vueling|booking|airbnb|trip\.com|hotel|hostal/i, 'Ocio'],
+  [/restaurante|bar |cafeter[ií]a|cine|cines|concierto|entrada/i, 'Ocio'],
+  [/zara|amazon|el corte|decathlon|media markt|primark|ikea|leroy merlin/i, 'Compras'],
+  [/endesa|iberdrola|naturgy|repsol luz|holaluz|agua|comunidad de propietarios|alquiler|hipoteca/i, 'Vivienda'],
+  [/wallapop|bizum/i, 'Otros'],
 ]
 
-function sugerirCategoria(descripcion = '') {
+function sugerirCategoria(descripcion = '', reglasAprendidas = []) {
+  const desc = descripcion.toUpperCase()
+  const aprendida = reglasAprendidas.find((r) => desc.includes(r.patron.toUpperCase()))
+  if (aprendida) return aprendida.categoria
+
   const match = REGLAS.find(([re]) => re.test(descripcion))
   return match ? match[1] : 'Otros'
 }
@@ -52,7 +62,7 @@ export default function App() {
   useEffect(() => {
     async function cargar() {
       try {
-        const [movs, ingresos] = await Promise.all([getMovimientos(), getIngresos()])
+        const [movs, ingresos] = await Promise.all([getMovimientos(), getIngresos(),getReglasCategoria()])
         setMovimientos(movs)
         setSueldo(ingresos[0]?.importe ?? null)
         const meses = [...new Set(movs.map((m) => claveMes(m.fecha)))]
@@ -91,23 +101,34 @@ export default function App() {
   const porCategoria = useMemo(() => {
     const grupos = {}
     for (const m of delMes) {
-      const cat = m.categoria || sugerirCategoria(m.descripcion)
+      const cat = m.categoria || sugerirCategoria(m.descripcion, reglas)
       grupos[cat] = (grupos[cat] || 0) + Number(m.importe)
     }
     return Object.entries(grupos).sort((a, b) => b[1] - a[1])
   }, [delMes])
 
-  async function cambiarCategoria(mov, categoria) {
-    setMovimientos((prev) =>
-      prev.map((m) => (m.id === mov.id ? { ...m, categoria } : m))
-    )
-    setAbierto(null)
-    try {
-      await updateCategoria(mov.id, categoria)
-    } catch (e) {
-      setError(e.message)
+async function cambiarCategoria(mov, categoria) {
+  setMovimientos((prev) =>
+    prev.map((m) => (m.id === mov.id ? { ...m, categoria } : m))
+  )
+  setAbierto(null)
+
+  // Extraemos una "palabra clave" simple del comercio para aprender el patrón
+  const patron = mov.descripcion.trim().split(/\s{2,}|\d/)[0].trim().slice(0, 30)
+
+  try {
+    await updateCategoria(mov.id, categoria)
+    if (patron.length >= 3) {
+      await guardarReglaCategoria(patron, categoria)
+      setReglas((prev) => {
+        const otras = prev.filter((r) => r.patron !== patron)
+        return [...otras, { patron, categoria }]
+      })
     }
+  } catch (e) {
+    setError(e.message)
   }
+}
 
   async function eliminarMovimiento(mov) {
   if (!confirm(`¿Eliminar "${mov.descripcion}" (${formatEUR(mov.importe)})?`)) return
@@ -231,7 +252,7 @@ export default function App() {
             <div key={fecha} className="grupo-dia">
               <p className="fecha-dia">{fechaCorta(fecha)}</p>
               {movs.map((m) => {
-                const cat = m.categoria || sugerirCategoria(m.descripcion)
+                const cat = m.categoria || sugerirCategoria(m.descripcion, reglas)
                 return (
                   <div key={m.id} className="item-linea">
                     <button
