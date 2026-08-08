@@ -48,3 +48,11 @@ export async function setIngresoMesActual(importe) {
   )
   if (!r.ok) throw new Error('No se pudo guardar el sueldo')
 }
+
+export async function deleteMovimiento(id) {
+  const r = await fetch(`${URL}/rest/v1/movimientos?id=eq.${id}`, {
+    method: 'DELETE',
+    headers,
+  })
+  if (!r.ok) throw new Error('No se pudo eliminar el movimiento')
+}

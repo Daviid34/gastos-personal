@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { getMovimientos, updateCategoria, getIngresos, setIngresoMesActual } from './supabase'
+import { getMovimientos, updateCategoria, getIngresos, setIngresoMesActual, deleteMovimiento } from './supabase'
 
 const CATEGORIAS = [
   'Alimentación', 'Transporte', 'Ocio', 'Suscripciones',
@@ -108,6 +108,17 @@ export default function App() {
       setError(e.message)
     }
   }
+
+  async function eliminarMovimiento(mov) {
+  if (!confirm(`¿Eliminar "${mov.descripcion}" (${formatEUR(mov.importe)})?`)) return
+  setMovimientos((prev) => prev.filter((m) => m.id !== mov.id))
+  setAbierto(null)
+  try {
+    await deleteMovimiento(mov.id)
+  } catch (e) {
+    setError(e.message)
+  }
+}
 
   async function guardarSueldo(valor) {
     const num = Number(valor)
@@ -243,6 +254,9 @@ export default function App() {
                             {c}
                           </button>
                         ))}
+                        <button className="pill pill-borrar" onClick={() => eliminarMovimiento(m)}>
+                          🗑 Eliminar
+                        </button>
                       </div>
                     )}
                   </div>

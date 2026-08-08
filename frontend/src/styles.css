@@ -318,3 +318,8 @@ h1 {
 @media (min-width: 480px) {
   .receipt { padding: 28px 26px 8px; }
 }
+
+.pill-borrar {
+  color: #b3261e;
+  border-color: #b3261e;
+}
