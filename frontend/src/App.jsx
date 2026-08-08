@@ -1,13 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import {
-  getMovimientos,
-  updateCategoria,
-  getIngresos,
-  setIngresoMesActual,
-  deleteMovimiento,
-  getReglasCategoria,
-  guardarReglaCategoria,
-} from './supabase'
+import { getMovimientos, updateCategoria, getIngresos, setIngresoMesActual, deleteMovimiento, getReglasCategoria, guardarReglaCategoria, getResumenMensual } from './supabase'
+
 import {
   CATEGORIAS,
   sugerirCategoria,
@@ -29,6 +22,8 @@ export default function App() {
   const [mesSeleccionado, setMesSeleccionado] = useState(null)
   const [abierto, setAbierto] = useState(null)
   const [vista, setVista] = useState('resumen')
+  const [resumenIA, setResumenIA] = useState(null)
+  const [cargandoResumen, setCargandoResumen] = useState(false)
 
   useEffect(() => {
     async function cargar() {
@@ -115,6 +110,19 @@ export default function App() {
       setError(e.message)
     }
   }
+
+  async function generarResumen(forzar = false) {
+    setCargandoResumen(true)
+    try {
+      const texto = await getResumenMensual(mesSeleccionado, forzar)
+      setResumenIA(texto)
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setCargandoResumen(false)
+    }
+  }
+
 
   async function guardarSueldo(valor) {
     const num = Number(valor)
@@ -221,6 +229,15 @@ export default function App() {
               <button type="submit">Guardar</button>
             </form>
           )}
+          <div className="resumen-ia">
+            {resumenIA ? (
+              <p className="texto-ia">🤖 {resumenIA}</p>
+            ) : (
+              <button className="btn-ia" onClick={() => generarResumen(false)} disabled={cargandoResumen}>
+                {cargandoResumen ? 'Generando...' : '✨ Generar resumen con IA'}
+              </button>
+            )}
+          </div>
         </section>
 
         {vista === 'resumen' ? (

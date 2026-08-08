@@ -1,12 +1,13 @@
 export const CATEGORIAS = [
   'Alimentación', 'Transporte', 'Ocio', 'Suscripciones',
-  'Salud', 'Vivienda', 'Compras', 'Otros',
+  'Salud', 'Vivienda', 'Compras', 'Gasolina', 'Otros',
 ]
 
 const REGLAS = [
   [/mercadona|carrefour|lidl|aldi|caprabo|consum|dia %|eroski|alcampo/i, 'Alimentación'],
   [/glovo|just eat|uber eats|deliveroo/i, 'Alimentación'],
-  [/renfe|hife|uber|cabify|blablacar|taxi|repsol|cepsa|shell|bp |estaci[oó]n|parking|itv|peaje/i, 'Transporte'],
+  [/renfe|hife|uber|cabify|blablacar|taxi|parking|itv|peaje/i, 'Transporte'],
+  [/repsol|cepsa|shell|bp |gasolinera|estaci[oó]n de servicio|guissona|petronor|galp/i, 'Gasolina'],
   [/spotify|netflix|hbo|disney|prime video|youtube|icloud|google (one|storage)|playstation|xbox|nintendo/i, 'Suscripciones'],
   [/farmacia|clinica|cl[ií]nica|dentista|hospital|seguro (medico|salud)|mutua|fisioterap/i, 'Salud'],
   [/ryanair|vueling|booking|airbnb|trip\.com|hotel|hostal/i, 'Ocio'],
